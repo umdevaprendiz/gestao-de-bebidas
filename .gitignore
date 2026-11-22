@@ -1,0 +1,9 @@
+# Maven
+target/
+
+# Dados gerados pelo sistema ao rodar (bebidas.csv e vendas.csv)
+dados/
+
+# IDE
+out/
+*.iml

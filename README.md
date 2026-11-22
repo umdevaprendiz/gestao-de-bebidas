@@ -1,21 +1,21 @@
 # Sistema de Gerenciamento de Bebidas
 
-Projeto em **Java puro** (sem Spring Boot, sem Maven/Gradle, sem bibliotecas externas) feito para a disciplina de Programação Orientada a Objetos. É um sistema de console para controlar o estoque e as vendas de uma loja de bebidas.
+Projeto da disciplina **Linguagem de Programação**, feito em **Java puro** (sem Spring Boot e sem frameworks) e com build gerenciado pelo **Maven**. É um sistema de console para controlar o estoque e as vendas de uma loja de bebidas.
 
 ## Como executar
 
-Requisito: JDK 11 ou superior instalado (`java -version` e `javac -version` devem funcionar).
-
-Em uma IDE (IntelliJ, Eclipse, VS Code), marque a pasta `src` como raiz dos fontes e execute a classe `app.Main`.
+Requisitos: JDK 17 ou superior e Maven (`java -version` e `mvn -version` devem funcionar). A IntelliJ já traz o Maven embutido: abra a pasta como projeto Maven (se perguntar, clique em *Load Maven Project*) e use a aba **Maven** à direita ou execute a classe `app.Main`.
 
 Pelo terminal, a partir da pasta do projeto:
 
-```powershell
-javac -encoding UTF-8 -d out -sourcepath src src\app\Main.java
-java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp out app.Main
-```
+| Ação | Comando |
+|---|---|
+| Rodar os testes (JUnit 5) | `mvn test` |
+| Compilar e rodar o sistema | `mvn compile exec:java` |
+| Gerar o jar executável | `mvn package` |
+| Rodar o jar gerado | `java -jar target\gestao-de-bebidas-1.0.jar` |
 
-Se os acentos aparecerem errados no Windows, rode `chcp 65001` antes. Para compilar e rodar os testes automáticos, use `testar.bat`.
+Se os acentos aparecerem errados no Windows, rode `chcp 65001` antes.
 
 Na primeira execução o sistema cria a pasta `dados/` com 9 bebidas de exemplo. Tudo o que você cadastrar, vender ou reabastecer é salvo automaticamente nos arquivos `dados/bebidas.csv` e `dados/vendas.csv`. Para recomeçar do zero, apague a pasta `dados/`.
 
@@ -30,18 +30,22 @@ Na primeira execução o sistema cria a pasta `dados/` com 9 bebidas de exemplo.
 7. Relatório do estoque (valor, imposto embutido, estoque baixo, total vendido)
 8. Histórico de vendas
 
-## Estrutura
+## Estrutura (padrão Maven)
 
 ```
-src/
+pom.xml                          configuração do Maven (Java 17, JUnit 5, jar executável)
+src/main/java/
   app/          Main (menu) e Entrada (leitura segura do teclado)
   modelo/       Bebida, BebidaAlcoolica, Cerveja, Vinho, Refrigerante, Suco, Venda,
                 interfaces Tributavel e Persistivel
   servico/      GerenciadorBebidas (regras do sistema) e DadosExemplo
   persistencia/ ArquivoRepositorio (lê/grava CSV) e BebidaFactory
   excecoes/     GestaoBebidasException e as exceções específicas
-  teste/        TestesBasicos (testes automáticos em Java puro)
+src/test/java/
+  modelo/ servico/ persistencia/   testes automáticos com JUnit 5
 ```
+
+A única dependência do projeto é o JUnit 5, usado apenas nos testes (`scope` `test`). O sistema em si usa somente a biblioteca padrão do Java.
 
 ## Onde cada conteúdo da disciplina aparece
 
@@ -60,7 +64,8 @@ src/
 | Composição / separação de responsabilidades | `GerenciadorBebidas` "tem" bebidas, vendas e um repositório; `Main` só faz a interface com o usuário |
 | Persistência em arquivos (`try-with-resources`) | `persistencia/ArquivoRepositorio.java` |
 | Strings (`split`, `format`, `equalsIgnoreCase`...) | `BebidaFactory`, `Bebida.toString()` |
-| Testes automáticos | `teste/TestesBasicos.java` |
+| Testes automáticos com JUnit | `src/test/java/` (30 testes) |
+| Maven | `pom.xml` |
 
 ## Diagrama de classes (UML)
 
@@ -156,4 +161,11 @@ Linhas inválidas (editadas à mão, por exemplo) são ignoradas com um aviso, s
 
 ## Testes
 
-`testar.bat` roda 36 verificações: impostos por tipo, validação de dados, estoque insuficiente, conversão para/de CSV, vendas, busca e gravação/leitura de arquivo. Os testes foram escritos sem JUnit para que o projeto continue sem dependências; se quiser migrar, cada método `testarXxx` vira um `@Test` com `assertEquals` / `assertThrows`.
+`mvn test` roda 30 testes JUnit 5:
+
+| Classe de teste | O que verifica |
+|---|---|
+| `modelo/BebidaTest` | impostos por tipo (polimorfismo), validação de dados, regras de estoque |
+| `persistencia/BebidaFactoryTest` | conversão de linha CSV em objeto e vice-versa, linhas inválidas |
+| `persistencia/ArquivoRepositorioTest` | gravar e recarregar arquivos, linha corrompida, pasta inexistente |
+| `servico/GerenciadorBebidasTest` | vendas, duplicidade, buscas, relatórios, remoção |
