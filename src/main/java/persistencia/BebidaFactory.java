@@ -7,19 +7,11 @@ import modelo.Refrigerante;
 import modelo.Suco;
 import modelo.Vinho;
 
-/**
- * Transforma uma linha do CSV no objeto certo.
- * Formato: TIPO;id;nome;preco;quantidade;volumeMl;campoEspecifico1;campoEspecifico2
- *
- * O método devolve o tipo genérico Bebida, mas o objeto criado é uma Cerveja, Vinho etc.
- * (POLIMORFISMO: quem chama não precisa saber qual é a classe concreta).
- */
 public class BebidaFactory {
 
     private static final int CAMPOS_ESPERADOS = 8;
 
     private BebidaFactory() {
-        // classe utilitária: não deve ser instanciada
     }
 
     public static Bebida criarDeLinha(String linha) throws DadosInvalidosException {

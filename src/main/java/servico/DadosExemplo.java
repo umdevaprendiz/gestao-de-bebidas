@@ -6,15 +6,12 @@ import modelo.Refrigerante;
 import modelo.Suco;
 import modelo.Vinho;
 
-/**
- * Bebidas de exemplo, carregadas na primeira execução para o sistema não começar vazio.
- */
 public class DadosExemplo {
 
     private DadosExemplo() {
     }
 
-    public static void popular(GerenciadorBebidas g) throws GestaoBebidasException {
+    public static void popular(OperacoesBebidas g) throws GestaoBebidasException {
         g.cadastrar(new Cerveja(g.gerarProximoId(), "Skol Pilsen", 4.50, 48, 350, 4.7, "Pilsen"));
         g.cadastrar(new Cerveja(g.gerarProximoId(), "Heineken", 6.90, 36, 330, 5.0, "Lager"));
         g.cadastrar(new Cerveja(g.gerarProximoId(), "Colorado Appia", 14.90, 8, 600, 5.5, "Weiss"));

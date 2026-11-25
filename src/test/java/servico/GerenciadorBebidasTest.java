@@ -25,9 +25,8 @@ class GerenciadorBebidasTest {
     @TempDir
     Path pasta;
 
-    private GerenciadorBebidas gerenciador;
+    private OperacoesBebidas gerenciador;
 
-    /** Antes de cada teste: gerenciador novo com uma cerveja (ID 1, 5 unidades, R$ 10,00 + 25% = R$ 12,50). */
     @BeforeEach
     void preparar() throws Exception {
         gerenciador = new GerenciadorBebidas(new ArquivoRepositorio(pasta));
@@ -91,8 +90,8 @@ class GerenciadorBebidasTest {
 
     @Test
     void relatoriosSomamValorEImpostoDoEstoque() {
-        assertEquals(62.5, gerenciador.calcularValorTotalEstoque(), MARGEM);  // 5 x 12,50
-        assertEquals(12.5, gerenciador.calcularImpostoTotalEstoque(), MARGEM); // 5 x 2,50
+        assertEquals(62.5, gerenciador.calcularValorTotalEstoque(), MARGEM);
+        assertEquals(12.5, gerenciador.calcularImpostoTotalEstoque(), MARGEM);
         assertEquals(5, gerenciador.contarUnidadesEmEstoque());
     }
 

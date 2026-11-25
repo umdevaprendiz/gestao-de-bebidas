@@ -13,14 +13,7 @@ import modelo.Bebida;
 import modelo.Venda;
 import persistencia.ArquivoRepositorio;
 
-/**
- * Classe de serviço: concentra as regras do sistema (cadastrar, vender, reabastecer...).
- * O Main só conversa com o usuário; quem decide e calcula é esta classe.
- *
- * Usa uma COMPOSIÇÃO: o gerenciador "tem" uma lista de Bebidas, uma lista de Vendas
- * e um repositório de arquivos.
- */
-public class GerenciadorBebidas {
+public class GerenciadorBebidas implements OperacoesBebidas {
 
     private final ArrayList<Bebida> bebidas = new ArrayList<>();
     private final ArrayList<Venda> vendas = new ArrayList<>();
@@ -30,8 +23,7 @@ public class GerenciadorBebidas {
         this.repositorio = repositorio;
     }
 
-    // ---------------------------- Persistência ----------------------------
-
+    @Override
     public void carregar() throws IOException {
         bebidas.clear();
         vendas.clear();
@@ -39,14 +31,13 @@ public class GerenciadorBebidas {
         vendas.addAll(repositorio.carregarVendas());
     }
 
+    @Override
     public void salvar() throws IOException {
         repositorio.salvarBebidas(bebidas);
         repositorio.salvarVendas(vendas);
     }
 
-    // ---------------------------- Cadastro e consulta ----------------------------
-
-    /** O próximo ID é o maior ID existente + 1. */
+    @Override
     public int gerarProximoId() {
         int maior = 0;
         for (Bebida bebida : bebidas) {
@@ -57,18 +48,18 @@ public class GerenciadorBebidas {
         return maior + 1;
     }
 
+    @Override
     public void cadastrar(Bebida nova) throws DadosInvalidosException {
-        for (Bebida existente : bebidas) {
-            boolean mesmoNome = existente.getNome().equalsIgnoreCase(nova.getNome());
-            boolean mesmoVolume = existente.getVolumeMl() == nova.getVolumeMl();
-            if (mesmoNome && mesmoVolume) {
-                throw new DadosInvalidosException("Já existe '" + existente.getNome() + "' de "
-                        + existente.getVolumeMl() + " ml cadastrada (ID " + existente.getId() + ").");
-            }
+        int posicao = bebidas.indexOf(nova);
+        if (posicao >= 0) {
+            Bebida existente = bebidas.get(posicao);
+            throw new DadosInvalidosException("Já existe '" + existente.getNome() + "' de "
+                    + existente.getVolumeMl() + " ml cadastrada (ID " + existente.getId() + ").");
         }
         bebidas.add(nova);
     }
 
+    @Override
     public Bebida buscarPorId(int id) throws BebidaNaoEncontradaException {
         for (Bebida bebida : bebidas) {
             if (bebida.getId() == id) {
@@ -78,7 +69,8 @@ public class GerenciadorBebidas {
         throw new BebidaNaoEncontradaException(id);
     }
 
-    public ArrayList<Bebida> buscarPorNome(String trecho) {
+    @Override
+    public List<Bebida> buscarPorNome(String trecho) {
         ArrayList<Bebida> encontradas = new ArrayList<>();
         String busca = trecho.toLowerCase();
         for (Bebida bebida : bebidas) {
@@ -89,30 +81,31 @@ public class GerenciadorBebidas {
         return encontradas;
     }
 
-    /** Devolve uma CÓPIA ordenada por nome (usa o compareTo da classe Bebida). */
-    public ArrayList<Bebida> listarOrdenadas() {
+    @Override
+    public List<Bebida> listarOrdenadas() {
         ArrayList<Bebida> copia = new ArrayList<>(bebidas);
         Collections.sort(copia);
         return copia;
     }
 
+    @Override
     public Bebida remover(int id) throws BebidaNaoEncontradaException {
         Bebida bebida = buscarPorId(id);
         bebidas.remove(bebida);
         return bebida;
     }
 
-    // ---------------------------- Estoque e vendas ----------------------------
-
+    @Override
     public void reabastecer(int id, int unidades) throws BebidaNaoEncontradaException, DadosInvalidosException {
         Bebida bebida = buscarPorId(id);
         bebida.adicionarEstoque(unidades);
     }
 
+    @Override
     public Venda vender(int id, int unidades)
             throws BebidaNaoEncontradaException, EstoqueInsuficienteException, DadosInvalidosException {
         Bebida bebida = buscarPorId(id);
-        bebida.removerEstoque(unidades); // pode lançar EstoqueInsuficienteException
+        bebida.removerEstoque(unidades);
 
         double total = bebida.getPrecoFinal() * unidades;
         Venda venda = new Venda(bebida.getId(), bebida.getNome(), unidades, total,
@@ -121,16 +114,17 @@ public class GerenciadorBebidas {
         return venda;
     }
 
+    @Override
     public List<Venda> getVendas() {
-        return Collections.unmodifiableList(vendas); // quem chama só pode ler
+        return Collections.unmodifiableList(vendas);
     }
 
-    // ---------------------------- Relatórios ----------------------------
-
+    @Override
     public int contarBebidas() {
         return bebidas.size();
     }
 
+    @Override
     public int contarUnidadesEmEstoque() {
         int total = 0;
         for (Bebida bebida : bebidas) {
@@ -139,7 +133,7 @@ public class GerenciadorBebidas {
         return total;
     }
 
-    /** Valor do estoque a preço de venda (com imposto). */
+    @Override
     public double calcularValorTotalEstoque() {
         double total = 0;
         for (Bebida bebida : bebidas) {
@@ -148,10 +142,7 @@ public class GerenciadorBebidas {
         return total;
     }
 
-    /**
-     * Imposto embutido no estoque. POLIMORFISMO: calcularImposto() é chamado em cada
-     * Bebida e cada tipo (Cerveja, Vinho, Refrigerante, Suco) calcula do seu jeito.
-     */
+    @Override
     public double calcularImpostoTotalEstoque() {
         double total = 0;
         for (Bebida bebida : bebidas) {
@@ -160,7 +151,8 @@ public class GerenciadorBebidas {
         return total;
     }
 
-    public ArrayList<Bebida> listarEstoqueBaixo(int limite) {
+    @Override
+    public List<Bebida> listarEstoqueBaixo(int limite) {
         ArrayList<Bebida> baixas = new ArrayList<>();
         for (Bebida bebida : bebidas) {
             if (bebida.isEstoqueBaixo(limite)) {
@@ -170,6 +162,7 @@ public class GerenciadorBebidas {
         return baixas;
     }
 
+    @Override
     public double calcularTotalVendido() {
         double total = 0;
         for (Venda venda : vendas) {

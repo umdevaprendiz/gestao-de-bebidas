@@ -29,6 +29,19 @@ Na primeira execução o sistema cria a pasta `dados/` com 9 bebidas de exemplo.
 6. Remover bebida
 7. Relatório do estoque (valor, imposto embutido, estoque baixo, total vendido)
 8. Histórico de vendas
+9. Salvar dados
+0. Salvar e sair
+
+## Requisitos do mini-projeto
+
+| Req. | O que pede | Como o projeto atende |
+|---|---|---|
+| 1 | Classe de entidade com `hashCode` e `equals` | `modelo/Bebida.java`: `equals`/`hashCode` comparam **nome (sem diferenciar maiúsculas) + volume**. São usados em `GerenciadorBebidas.cadastrar()` (via `indexOf`) para impedir bebida duplicada |
+| 2 | Interface com as operações principais e classe concreta que guarda os dados em `ArrayList`/`LinkedList` | Interface `servico/OperacoesBebidas.java`; implementação `servico/GerenciadorBebidas.java`, que guarda bebidas e vendas em `ArrayList` |
+| 3 | Exceção própria (herda de `Exception`), lançada com `throws` na interface e na classe, e tratada com `try/catch` no menu | `excecoes/` (`GestaoBebidasException` e as filhas); `throws` em `OperacoesBebidas` e `GerenciadorBebidas` (ex.: `vender`, `buscarPorId`, `cadastrar`); `try/catch` em `Main.executarMenu()` |
+| 4 | Persistir em arquivo texto editável, com `BufferedReader`/`BufferedWriter` | `persistencia/ArquivoRepositorio.java`. Lê no início (`Main.carregarDados()`) e grava ao sair (opção 0), na opção 9 e depois de cada alteração. Arquivos: `dados/bebidas.csv` e `dados/vendas.csv` |
+| 5 | Menu com ao menos 6 operações (cadastrar, pesquisar, salvar dados, sair...) | `app/Main.java`: menu de texto com 8 operações, mais *Salvar dados* e *Salvar e sair*, todas ligadas aos métodos da interface |
+| 6 (opcional) | Classe herdada por outras, abstrata ou não | `Bebida` e `BebidaAlcoolica` (abstratas) → `Cerveja`, `Vinho`, `Refrigerante`, `Suco` |
 
 ## Estrutura (padrão Maven)
 
@@ -38,7 +51,7 @@ src/main/java/
   app/          Main (menu) e Entrada (leitura segura do teclado)
   modelo/       Bebida, BebidaAlcoolica, Cerveja, Vinho, Refrigerante, Suco, Venda,
                 interfaces Tributavel e Persistivel
-  servico/      GerenciadorBebidas (regras do sistema) e DadosExemplo
+  servico/      OperacoesBebidas (interface), GerenciadorBebidas (implementação) e DadosExemplo
   persistencia/ ArquivoRepositorio (lê/grava CSV) e BebidaFactory
   excecoes/     GestaoBebidasException e as exceções específicas
 src/test/java/
@@ -54,7 +67,8 @@ A única dependência do projeto é o JUnit 5, usado apenas nos testes (`scope` 
 | Criação de classes, atributos privados, construtores, getters/setters (encapsulamento) | `modelo/Bebida.java` |
 | Herança e reuso de código | `Bebida` → `BebidaAlcoolica` → `Cerveja` / `Vinho`; `Bebida` → `Refrigerante` / `Suco` |
 | Classes abstratas | `Bebida` e `BebidaAlcoolica` (métodos abstratos: `getCategoria`, `getDetalhes`, `camposEspecificos`) |
-| Interfaces | `Tributavel`, `Persistivel` (e `Comparable` do próprio Java) |
+| Interfaces | `OperacoesBebidas`, `Tributavel`, `Persistivel` (e `Comparable` do próprio Java) |
+| `equals` e `hashCode` | `modelo/Bebida.java` |
 | Polimorfismo | `GerenciadorBebidas.calcularImpostoTotalEstoque()`, `Main.listarBebidas()`, `ArquivoRepositorio.salvar()` |
 | Coleções (`ArrayList`) | `GerenciadorBebidas` (listas de bebidas e de vendas) |
 | `for-each` | `GerenciadorBebidas`, `Main`, `ArquivoRepositorio` |
@@ -64,7 +78,7 @@ A única dependência do projeto é o JUnit 5, usado apenas nos testes (`scope` 
 | Composição / separação de responsabilidades | `GerenciadorBebidas` "tem" bebidas, vendas e um repositório; `Main` só faz a interface com o usuário |
 | Persistência em arquivos (`try-with-resources`) | `persistencia/ArquivoRepositorio.java` |
 | Strings (`split`, `format`, `equalsIgnoreCase`...) | `BebidaFactory`, `Bebida.toString()` |
-| Testes automáticos com JUnit | `src/test/java/` (30 testes) |
+| Testes automáticos com JUnit | `src/test/java/` (34 testes) |
 | Maven | `pom.xml` |
 
 ## Diagrama de classes (UML)
@@ -91,6 +105,8 @@ classDiagram
         +removerEstoque(int)
         +getCategoria() String
         +getDetalhes() String
+        +equals(Object) boolean
+        +hashCode() int
     }
     class BebidaAlcoolica {
         <<abstract>>
@@ -111,11 +127,13 @@ classDiagram
         -int quantidade
         -double valorTotal
     }
-    class GerenciadorBebidas {
+    class OperacoesBebidas {
+        <<interface>>
         +cadastrar(Bebida)
         +vender(int, int) Venda
         +reabastecer(int, int)
     }
+    class GerenciadorBebidas
     class ArquivoRepositorio
 
     Tributavel <|.. Bebida
@@ -126,6 +144,7 @@ classDiagram
     BebidaAlcoolica <|-- Vinho
     Bebida <|-- Refrigerante
     Bebida <|-- Suco
+    OperacoesBebidas <|.. GerenciadorBebidas
     GerenciadorBebidas o-- Bebida
     GerenciadorBebidas o-- Venda
     GerenciadorBebidas --> ArquivoRepositorio
@@ -161,11 +180,11 @@ Linhas inválidas (editadas à mão, por exemplo) são ignoradas com um aviso, s
 
 ## Testes
 
-`mvn test` roda 30 testes JUnit 5:
+`mvn test` roda 34 testes JUnit 5:
 
 | Classe de teste | O que verifica |
 |---|---|
-| `modelo/BebidaTest` | impostos por tipo (polimorfismo), validação de dados, regras de estoque |
+| `modelo/BebidaTest` | impostos por tipo (polimorfismo), validação de dados, regras de estoque, `equals`/`hashCode` |
 | `persistencia/BebidaFactoryTest` | conversão de linha CSV em objeto e vice-versa, linhas inválidas |
 | `persistencia/ArquivoRepositorioTest` | gravar e recarregar arquivos, linha corrompida, pasta inexistente |
 | `servico/GerenciadorBebidasTest` | vendas, duplicidade, buscas, relatórios, remoção |

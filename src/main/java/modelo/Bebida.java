@@ -1,26 +1,17 @@
 package modelo;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import excecoes.DadosInvalidosException;
 import excecoes.EstoqueInsuficienteException;
 
-/**
- * CLASSE ABSTRATA: representa qualquer bebida do sistema.
- * Não dá para fazer "new Bebida(...)": só as subclasses (Cerveja, Vinho, ...) podem ser criadas.
- *
- * Aqui ficam os atributos e comportamentos COMUNS (reuso com herança).
- * O que muda de bebida para bebida fica nos métodos abstratos, que cada filha implementa.
- *
- * ENCAPSULAMENTO: todos os atributos são privados; o acesso é feito por getters/métodos
- * que validam os dados antes de alterar o objeto.
- */
 public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebida> {
 
     private final int id;
-    private String nome;
-    private double preco;        // preço de venda SEM imposto
-    private int quantidade;      // unidades em estoque
+    private final String nome;
+    private double preco;
+    private int quantidade;
     private final int volumeMl;
 
     protected Bebida(int id, String nome, double preco, int quantidade, int volumeMl)
@@ -41,9 +32,6 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
         this.volumeMl = volumeMl;
     }
 
-    // ---------- Validações reaproveitadas pelas subclasses ----------
-
-    /** Texto não pode ser vazio nem conter ';' (que é o separador do arquivo CSV). */
     protected static String validarTexto(String campo, String valor) throws DadosInvalidosException {
         if (valor == null || valor.trim().isEmpty()) {
             throw new DadosInvalidosException("O campo '" + campo + "' não pode ficar vazio.");
@@ -54,7 +42,6 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
         return valor.trim();
     }
 
-    /** Número tem que ser finito e maior que zero. */
     protected static double validarPositivo(String campo, double valor) throws DadosInvalidosException {
         if (!Double.isFinite(valor) || valor <= 0) {
             throw new DadosInvalidosException("O campo '" + campo + "' deve ser um número maior que zero.");
@@ -62,18 +49,12 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
         return valor;
     }
 
-    // ---------- Getters e setters ----------
-
     public int getId() {
         return id;
     }
 
     public String getNome() {
         return nome;
-    }
-
-    public void setNome(String nome) throws DadosInvalidosException {
-        this.nome = validarTexto("nome", nome);
     }
 
     public double getPreco() {
@@ -91,8 +72,6 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
     public int getVolumeMl() {
         return volumeMl;
     }
-
-    // ---------- Regras de negócio ----------
 
     public void adicionarEstoque(int unidades) throws DadosInvalidosException {
         if (unidades <= 0) {
@@ -115,28 +94,19 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
         return quantidade < limite;
     }
 
-    /** Preço que o cliente paga: preço + imposto (o imposto varia conforme a subclasse). */
     public double getPrecoFinal() {
         return preco + calcularImposto();
     }
 
-    /** Subclasses alcoólicas sobrescrevem para retornar true. */
     public boolean isAlcoolica() {
         return false;
     }
 
-    // ---------- Métodos ABSTRATOS: cada tipo de bebida define o seu ----------
-
-    /** Nome da categoria, ex.: "Cerveja". */
     public abstract String getCategoria();
 
-    /** Descrição dos atributos específicos, ex.: "Pilsen, 4.7% de álcool". */
     public abstract String getDetalhes();
 
-    /** Campos específicos da subclasse, já separados por ';', para gravar no CSV. */
     protected abstract String camposEspecificos();
-
-    // ---------- Persistência (interface Persistivel) ----------
 
     @Override
     public String paraLinhaCsv() {
@@ -144,7 +114,23 @@ public abstract class Bebida implements Tributavel, Persistivel, Comparable<Bebi
                 + quantidade + ";" + volumeMl + ";" + camposEspecificos();
     }
 
-    // ---------- Ordenação (interface Comparable): por nome ----------
+    @Override
+    public boolean equals(Object objeto) {
+        if (this == objeto) {
+            return true;
+        }
+        if (!(objeto instanceof Bebida)) {
+            return false;
+        }
+        Bebida outra = (Bebida) objeto;
+        return volumeMl == outra.volumeMl
+                && nome.toLowerCase(Locale.ROOT).equals(outra.nome.toLowerCase(Locale.ROOT));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nome.toLowerCase(Locale.ROOT), volumeMl);
+    }
 
     @Override
     public int compareTo(Bebida outra) {

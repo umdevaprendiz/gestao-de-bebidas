@@ -17,7 +17,7 @@ import modelo.Refrigerante;
 class ArquivoRepositorioTest {
 
     @TempDir
-    Path pasta; // pasta temporária criada e apagada pelo próprio JUnit
+    Path pasta;
 
     @Test
     void salvarERecarregarMantemEstoqueEVendas() throws Exception {

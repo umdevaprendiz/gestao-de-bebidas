@@ -4,9 +4,9 @@ import excecoes.DadosInvalidosException;
 
 public class Vinho extends BebidaAlcoolica {
 
-    private static final double ALIQUOTA = 0.30; // 30% de imposto
+    private static final double ALIQUOTA = 0.30;
 
-    private final String tipo; // Tinto, Branco, Rosé...
+    private final String tipo;
 
     public Vinho(int id, String nome, double preco, int quantidade, int volumeMl,
                  double teorAlcoolico, String tipo) throws DadosInvalidosException {

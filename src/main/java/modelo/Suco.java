@@ -4,8 +4,8 @@ import excecoes.DadosInvalidosException;
 
 public class Suco extends Bebida {
 
-    private static final double ALIQUOTA_NORMAL = 0.10;  // 10%
-    private static final double ALIQUOTA_NATURAL = 0.05; // 5% (suco 100% natural/integral)
+    private static final double ALIQUOTA_NORMAL = 0.10;
+    private static final double ALIQUOTA_NATURAL = 0.05;
 
     private final String fruta;
     private final boolean natural;

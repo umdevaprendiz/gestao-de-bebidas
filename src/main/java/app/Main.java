@@ -2,7 +2,7 @@ package app;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import excecoes.DadosInvalidosException;
@@ -17,16 +17,13 @@ import modelo.Vinho;
 import persistencia.ArquivoRepositorio;
 import servico.DadosExemplo;
 import servico.GerenciadorBebidas;
+import servico.OperacoesBebidas;
 
-/**
- * Menu de console do Sistema de Gerenciamento de Bebidas.
- * Esta classe só conversa com o usuário; as regras ficam em GerenciadorBebidas.
- */
 public class Main {
 
     private static final int LIMITE_ESTOQUE_BAIXO = 10;
 
-    private static GerenciadorBebidas gerenciador;
+    private static OperacoesBebidas gerenciador;
 
     public static void main(String[] args) {
         ArquivoRepositorio repositorio = new ArquivoRepositorio(Paths.get("dados"));
@@ -37,14 +34,9 @@ public class Main {
         try {
             executarMenu();
         } catch (NoSuchElementException e) {
-            // acontece quando a entrada do teclado é encerrada (Ctrl+Z / Ctrl+D)
             System.out.println("\nEntrada encerrada. Até logo!");
         }
     }
-
-    // ------------------------------------------------------------------
-    // Inicialização
-    // ------------------------------------------------------------------
 
     private static void carregarDados(ArquivoRepositorio repositorio) {
         try {
@@ -64,17 +56,15 @@ public class Main {
         }
     }
 
-    private static void salvarDados() {
+    private static boolean salvarDados() {
         try {
             gerenciador.salvar();
+            return true;
         } catch (IOException e) {
             System.out.println("ATENÇÃO: não foi possível salvar os dados: " + e.getMessage());
+            return false;
         }
     }
-
-    // ------------------------------------------------------------------
-    // Menu
-    // ------------------------------------------------------------------
 
     private static void exibirMenu() {
         System.out.println();
@@ -89,7 +79,8 @@ public class Main {
         System.out.println(" 6 - Remover bebida");
         System.out.println(" 7 - Relatório do estoque");
         System.out.println(" 8 - Histórico de vendas");
-        System.out.println(" 0 - Sair");
+        System.out.println(" 9 - Salvar dados");
+        System.out.println(" 0 - Salvar e sair");
         System.out.println("-----------------------------------------");
     }
 
@@ -125,25 +116,27 @@ public class Main {
                     case 8:
                         exibirHistoricoVendas();
                         break;
+                    case 9:
+                        if (salvarDados()) {
+                            System.out.println("Dados salvos na pasta 'dados'.");
+                        }
+                        break;
                     case 0:
-                        System.out.println("Dados salvos na pasta 'dados'. Até logo!");
+                        if (salvarDados()) {
+                            System.out.println("Dados salvos na pasta 'dados'.");
+                        }
+                        System.out.println("Até logo!");
                         break;
                     default:
                         System.out.println("Opção inexistente. Tente novamente.");
                 }
             } catch (EstoqueInsuficienteException e) {
-                // captura mais específica primeiro...
                 System.out.println("Venda não realizada! " + e.getMessage());
             } catch (GestaoBebidasException e) {
-                // ...e a exceção "mãe" captura todas as outras do sistema
                 System.out.println("Erro: " + e.getMessage());
             }
         } while (opcao != 0);
     }
-
-    // ------------------------------------------------------------------
-    // Opções do menu
-    // ------------------------------------------------------------------
 
     private static void cadastrarBebida() throws GestaoBebidasException {
         System.out.println("\n--- Cadastrar bebida ---");
@@ -153,14 +146,12 @@ public class Main {
             throw new DadosInvalidosException("Tipo de bebida inválido.");
         }
 
-        // dados comuns a todas as bebidas
         String nome = Entrada.lerTexto("Nome: ");
         double preco = Entrada.lerDouble("Preço sem imposto (R$): ");
         int quantidade = Entrada.lerInt("Quantidade em estoque: ");
         int volumeMl = Entrada.lerInt("Volume (ml): ");
         int id = gerenciador.gerarProximoId();
 
-        // dados específicos de cada tipo
         Bebida nova;
         switch (tipo) {
             case 1: {
@@ -196,12 +187,11 @@ public class Main {
 
     private static void listarBebidas() {
         System.out.println("\n--- Bebidas cadastradas ---");
-        ArrayList<Bebida> lista = gerenciador.listarOrdenadas();
+        List<Bebida> lista = gerenciador.listarOrdenadas();
         if (lista.isEmpty()) {
             System.out.println("Nenhuma bebida cadastrada.");
             return;
         }
-        // for-each + POLIMORFISMO: println chama o toString() de cada tipo de bebida
         for (Bebida bebida : lista) {
             System.out.println(bebida);
         }
@@ -210,7 +200,7 @@ public class Main {
     private static void buscarBebidas() {
         System.out.println("\n--- Buscar bebida ---");
         String trecho = Entrada.lerTexto("Digite parte do nome: ");
-        ArrayList<Bebida> encontradas = gerenciador.buscarPorNome(trecho);
+        List<Bebida> encontradas = gerenciador.buscarPorNome(trecho);
         if (encontradas.isEmpty()) {
             System.out.println("Nenhuma bebida encontrada para '" + trecho + "'.");
             return;
@@ -240,7 +230,6 @@ public class Main {
         int id = Entrada.lerInt("ID da bebida: ");
         Bebida bebida = gerenciador.buscarPorId(id);
 
-        // isAlcoolica() é polimórfico: cada tipo responde de acordo com a sua classe
         if (bebida.isAlcoolica() && !Entrada.lerSimNao("Bebida alcoólica. O cliente tem 18 anos ou mais?")) {
             System.out.println("Venda cancelada: proibida para menores de 18 anos.");
             return;
@@ -282,7 +271,7 @@ public class Main {
         System.out.printf("Total já vendido             : R$ %.2f%n", gerenciador.calcularTotalVendido());
 
         System.out.println("\nBebidas com estoque baixo (menos de " + LIMITE_ESTOQUE_BAIXO + " unidades):");
-        ArrayList<Bebida> baixas = gerenciador.listarEstoqueBaixo(LIMITE_ESTOQUE_BAIXO);
+        List<Bebida> baixas = gerenciador.listarEstoqueBaixo(LIMITE_ESTOQUE_BAIXO);
         if (baixas.isEmpty()) {
             System.out.println("  Nenhuma. Tudo certo!");
         }

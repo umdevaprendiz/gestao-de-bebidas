@@ -6,9 +6,6 @@ import java.time.format.DateTimeParseException;
 
 import excecoes.DadosInvalidosException;
 
-/**
- * Registro de uma venda realizada. É um objeto "imutável": depois de criado, não muda.
- */
 public class Venda implements Persistivel {
 
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -52,7 +49,6 @@ public class Venda implements Persistivel {
         return idBebida + ";" + nomeBebida + ";" + quantidade + ";" + valorTotal + ";" + dataHora;
     }
 
-    /** Reconstrói uma Venda a partir de uma linha do arquivo CSV. */
     public static Venda deLinhaCsv(String linha) throws DadosInvalidosException {
         String[] campos = linha.split(";", -1);
         if (campos.length != 5) {

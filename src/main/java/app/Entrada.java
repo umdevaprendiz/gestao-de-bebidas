@@ -2,11 +2,6 @@ package app;
 
 import java.util.Scanner;
 
-/**
- * Funções auxiliares para ler dados do teclado com segurança.
- * Se o usuário digitar uma letra onde se espera um número, o programa NÃO quebra:
- * o try/catch captura o NumberFormatException e pede o valor de novo.
- */
 public class Entrada {
 
     private static final Scanner SCANNER = new Scanner(System.in);
@@ -34,7 +29,6 @@ public class Entrada {
         while (true) {
             String texto = lerTexto(mensagem);
             try {
-                // aceita tanto 4.50 quanto 4,50
                 return Double.parseDouble(texto.replace(',', '.'));
             } catch (NumberFormatException e) {
                 System.out.println("Valor inválido! Digite um número (ex.: 4,50).");

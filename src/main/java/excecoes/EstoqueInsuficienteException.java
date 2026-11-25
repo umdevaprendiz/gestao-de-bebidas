@@ -1,8 +1,5 @@
 package excecoes;
 
-/**
- * Lançada ao tentar vender/retirar mais unidades do que existem em estoque.
- */
 public class EstoqueInsuficienteException extends GestaoBebidasException {
 
     private final int disponivel;

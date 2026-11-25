@@ -4,8 +4,8 @@ import excecoes.DadosInvalidosException;
 
 public class Refrigerante extends Bebida {
 
-    private static final double ALIQUOTA_NORMAL = 0.20; // 20%
-    private static final double ALIQUOTA_DIET = 0.15;   // 15% (versão diet/zero paga menos)
+    private static final double ALIQUOTA_NORMAL = 0.20;
+    private static final double ALIQUOTA_DIET = 0.15;
 
     private final String sabor;
     private final boolean diet;

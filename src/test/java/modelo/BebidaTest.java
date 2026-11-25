@@ -2,10 +2,13 @@ package modelo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,14 +21,13 @@ class BebidaTest {
 
     @Test
     void cadaTipoCalculaOImpostoDoSeuJeito() throws Exception {
-        // POLIMORFISMO: a lista é de Bebida, mas cada objeto responde de acordo com a sua classe
         ArrayList<Bebida> bebidas = new ArrayList<>();
-        bebidas.add(new Cerveja(1, "Cerveja", 10.0, 5, 350, 5.0, "Pilsen"));          // 25%
-        bebidas.add(new Vinho(2, "Vinho", 100.0, 5, 750, 13.0, "Tinto"));             // 30%
-        bebidas.add(new Refrigerante(3, "Refri", 10.0, 5, 2000, "Cola", false));      // 20%
-        bebidas.add(new Refrigerante(4, "Refri Diet", 10.0, 5, 2000, "Cola", true));  // 15%
-        bebidas.add(new Suco(5, "Suco", 10.0, 5, 1000, "Uva", false));                // 10%
-        bebidas.add(new Suco(6, "Suco Natural", 10.0, 5, 1000, "Uva", true));         // 5%
+        bebidas.add(new Cerveja(1, "Cerveja", 10.0, 5, 350, 5.0, "Pilsen"));
+        bebidas.add(new Vinho(2, "Vinho", 100.0, 5, 750, 13.0, "Tinto"));
+        bebidas.add(new Refrigerante(3, "Refri", 10.0, 5, 2000, "Cola", false));
+        bebidas.add(new Refrigerante(4, "Refri Diet", 10.0, 5, 2000, "Cola", true));
+        bebidas.add(new Suco(5, "Suco", 10.0, 5, 1000, "Uva", false));
+        bebidas.add(new Suco(6, "Suco Natural", 10.0, 5, 1000, "Uva", true));
 
         double[] esperado = {2.5, 30.0, 2.0, 1.5, 1.0, 0.5};
         int i = 0;
@@ -102,5 +104,43 @@ class BebidaTest {
 
         assertThrows(DadosInvalidosException.class, () -> cerveja.adicionarEstoque(0));
         assertThrows(DadosInvalidosException.class, () -> cerveja.removerEstoque(-1));
+    }
+
+    @Test
+    void mesmoNomeEVolumeSaoIguaisMesmoComIdPrecoEMaiusculasDiferentes() throws Exception {
+        Bebida a = new Cerveja(1, "Skol", 4.5, 10, 350, 4.7, "Pilsen");
+        Bebida b = new Cerveja(2, "SKOL", 5.0, 3, 350, 4.7, "Pilsen");
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void volumeOuNomeDiferenteSaoBebidasDiferentes() throws Exception {
+        Bebida lata = new Cerveja(1, "Skol", 4.5, 10, 350, 4.7, "Pilsen");
+        Bebida garrafa = new Cerveja(2, "Skol", 9.0, 10, 600, 4.7, "Pilsen");
+        Bebida outra = new Cerveja(3, "Brahma", 4.5, 10, 350, 4.8, "Pilsen");
+
+        assertNotEquals(lata, garrafa);
+        assertNotEquals(lata, outra);
+    }
+
+    @Test
+    void equalsRespeitaOContratoComElaMesmaNullEOutroTipo() throws Exception {
+        Bebida a = new Cerveja(1, "Skol", 4.5, 10, 350, 4.7, "Pilsen");
+
+        assertEquals(a, a);
+        assertNotEquals(a, null);
+        assertNotEquals(a, "Skol");
+    }
+
+    @Test
+    void hashSetNaoGuardaBebidasRepetidas() throws Exception {
+        Set<Bebida> conjunto = new HashSet<>();
+        conjunto.add(new Cerveja(1, "Skol", 4.5, 10, 350, 4.7, "Pilsen"));
+        conjunto.add(new Cerveja(2, "skol", 5.0, 3, 350, 4.7, "Pilsen"));
+        conjunto.add(new Vinho(3, "Casillero", 59.9, 12, 750, 13.5, "Tinto"));
+
+        assertEquals(2, conjunto.size());
     }
 }
