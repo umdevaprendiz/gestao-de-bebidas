@@ -2,6 +2,9 @@
 
 Projeto da disciplina **Linguagem de Programação**, feito em **Java puro** (sem Spring Boot e sem frameworks) e com build gerenciado pelo **Maven**. É um sistema de console para controlar o estoque e as vendas de uma loja de bebidas.
 
+Alunos: Sérgio Guilherme, Josué Francisco, José Lucas.
+
+
 ## Como executar
 
 Requisitos: JDK 17 ou superior e Maven (`java -version` e `mvn -version` devem funcionar). A IntelliJ já traz o Maven embutido: abra a pasta como projeto Maven (se perguntar, clique em *Load Maven Project*) e use a aba **Maven** à direita ou execute a classe `app.Main`.
