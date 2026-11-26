@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Bebidas
 
-Projeto da disciplina **Linguagem de Programação**, feito em **Java puro** (sem Spring Boot e sem frameworks) e com build gerenciado pelo **Maven**. É um sistema de console para controlar o estoque e as vendas de uma loja de bebidas.
+Projeto da disciplina **Linguagem de Programação**, feito em **Java puro** e com build gerenciado pelo **Maven**. É um sistema de console para controlar o estoque e as vendas de uma loja de bebidas.
 
 Alunos: Sérgio Guilherme, Josué Francisco, José Lucas.
 
